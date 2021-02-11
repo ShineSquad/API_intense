@@ -1,0 +1,185 @@
+<meta charset="utf-8">
+<script type="text/javascript" src="../examples/yMap_API.js"></script>
+<style type="text/css">
+	body, #app {
+        width: 100%; 
+        height: 100%; 
+        padding: 0; 
+        margin: 0;
+    }
+    #app {
+    	display: flex;
+    	flex-direction: row;
+    }
+    #map {
+    	height: 100%;
+    	max-width: 70%;
+    	width: 70%;
+    }
+    #notes {
+    	height: 100%;
+    	min-width: 400px;
+    	flex: 1;
+    	display: flex;
+    	flex-direction: row;
+    	flex-wrap: wrap;
+    	justify-content: space-around;
+    	align-items: center;
+    }
+    	.note {
+    		width: 170px;
+    		height: 170px;
+    		border: solid 1px grey;
+    		border-radius: 10px;
+    	}
+
+    .hidden {
+    	display: none;
+    }
+    #shadow_modal {
+    	width: 100%;
+    	height: 100%;
+    	background-color: rgba(255,255,255,.5);
+    	position: fixed;
+    	top: 0px;
+    	left: 0px;
+    	z-index: 998;
+    }
+    #addNode_modal.active {
+    	display: flex;
+    }
+    #addNode_modal {
+    	width: 450px;
+    	height: 600px;
+    	background-color: white;
+    	border-radius: 15px;
+    	z-index: 999;
+    	position: fixed;
+    	top: calc(50% - 300px);
+    	left: calc(50% - 225px);
+    	flex-direction: column;
+    }
+	    #addNode_modal textarea {
+	    	flex: 1;
+	    }
+	    #addNode_modal .buttons {
+	    	display: flex;
+	    	flex-direction: row;
+	    	justify-content: space-around;
+	    }
+</style>
+	<div id="app">
+		<div id="notes"></div>
+		<div id="map"></div>
+	</div>
+	<div id="shadow_modal" class="hidden"></div>
+	<div id="addNode_modal" class="hidden">
+		<input type="text"  name="coords">
+		<textarea name="note"></textarea>
+		<div class="buttons">
+			<button id="cancel">Отмена</button>
+			<button id="save">Сохранить</button>
+		</div>
+	</div>
+<script type="text/javascript">
+	var myMap, activeMarker;
+	var modal = {
+		window: document.querySelector("#addNode_modal"),
+		shadow: document.querySelector("#shadow_modal"),
+		coords: document.querySelector("#addNode_modal input"),
+		note:   document.querySelector("#addNode_modal textarea"),
+		cancel: document.querySelector("#cancel"),
+		save:   document.querySelector("#save")
+	}
+
+	modal.shadow.addEventListener("click", (ev)=>toggleModal())
+	modal.cancel.addEventListener("click", (ev)=>toggleModal())
+	modal.save.addEventListener("click", (ev)=>{
+		var notes = (localStorage.getItem("notes") === null)
+			? []
+			: JSON.parse(localStorage.getItem("notes"));
+		notes.push({
+			coords: modal.coords.value,
+			note: modal.note.value
+		})
+
+		localStorage.setItem("notes", JSON.stringify(notes));
+		toggleModal();
+		updateMarkers();
+	})
+	
+	ymaps.ready(init);
+
+	function init() {
+		// node, options
+		myMap = new ymaps.Map("map", {
+			center: [57.910144, 59.981320],
+			zoom: 12
+		})
+		myMap.events.add("click", ev => mmClick(ev))
+		updateMarkers();
+	}
+
+	// DOCS: https://yandex.ru/dev/maps/jsapi/doc/2.1/ref/concepts/About.html
+	// PRESETS: https://yandex.ru/dev/maps/jsapi/doc/2.1/ref/reference/option.presetStorage.html
+	function mmClick(event) {
+		var coords = event.get("coords");
+
+		if (activeMarker === undefined) {
+			activeMarker = new ymaps.Placemark(
+				coords, {},
+				{
+					draggable: true,
+					preset: "islands#dotIcon",
+					iconColor: "lime"
+				});
+			myMap.geoObjects.add(activeMarker);
+
+			activeMarker.events.add("contextmenu", (ev) => addEvent(ev));
+		} else {
+			activeMarker.geometry.setCoordinates(coords);
+		}
+	}
+
+	function addEvent(event) {
+		var coords = activeMarker.geometry.getCoordinates();
+		toggleModal(coords);
+	}
+
+	function toggleModal(coords=null) {
+		if (coords !== null) {
+			modal.coords.value = coords.join(", ")
+			modal.note.value = ""
+		}
+		modal.shadow.classList.toggle("hidden");
+		modal.window.classList.toggle("hidden");
+		modal.window.classList.toggle("active");
+	}
+	
+	function updateMarkers() {
+		if (localStorage.getItem("notes") === null) return false;
+		var notes = JSON.parse(localStorage.getItem("notes"));
+		var notesNode = document.querySelector("#notes");
+		while (notesNode.firstChild) {
+			notesNode.removeChild(notesNode.firstChild)
+		}
+
+		for (n of notes) {
+			// add markers
+			let coords = n.coords.split(", ");
+			let noteMarker = new ymaps.Placemark(
+				coords, {},
+				{
+					preset: "islands#yellowCircleDotIcon"
+				});
+			myMap.geoObjects.add(noteMarker);
+
+			// add notes
+			let div = document.createElement("div");
+			div.className = "note";
+			div.innerText = n.note;
+
+			notesNode.appendChild(div);
+		}
+	}
+</script>
