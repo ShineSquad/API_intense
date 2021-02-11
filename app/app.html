@@ -1,85 +1,30 @@
 <meta charset="utf-8">
 <script type="text/javascript" src="../examples/yMap_API.js"></script>
-<style type="text/css">
-	body, #app {
-        width: 100%; 
-        height: 100%; 
-        padding: 0; 
-        margin: 0;
-    }
-    #app {
-    	display: flex;
-    	flex-direction: row;
-    }
-    #map {
-    	height: 100%;
-    	max-width: 70%;
-    	width: 70%;
-    }
-    #notes {
-    	height: 100%;
-    	min-width: 400px;
-    	flex: 1;
-    	display: flex;
-    	flex-direction: row;
-    	flex-wrap: wrap;
-    	justify-content: space-around;
-    	align-items: center;
-    }
-    	.note {
-    		width: 170px;
-    		height: 170px;
-    		border: solid 1px grey;
-    		border-radius: 10px;
-    	}
-
-    .hidden {
-    	display: none;
-    }
-    #shadow_modal {
-    	width: 100%;
-    	height: 100%;
-    	background-color: rgba(255,255,255,.5);
-    	position: fixed;
-    	top: 0px;
-    	left: 0px;
-    	z-index: 998;
-    }
-    #addNode_modal.active {
-    	display: flex;
-    }
-    #addNode_modal {
-    	width: 450px;
-    	height: 600px;
-    	background-color: white;
-    	border-radius: 15px;
-    	z-index: 999;
-    	position: fixed;
-    	top: calc(50% - 300px);
-    	left: calc(50% - 225px);
-    	flex-direction: column;
-    }
-	    #addNode_modal textarea {
-	    	flex: 1;
-	    }
-	    #addNode_modal .buttons {
-	    	display: flex;
-	    	flex-direction: row;
-	    	justify-content: space-around;
-	    }
-</style>
+<link rel="stylesheet" type="text/css" href="css/style.css">
 	<div id="app">
-		<div id="notes"></div>
+		<div id="notes">
+			<div id="title">Заметки</div>
+		</div>
 		<div id="map"></div>
 	</div>
 	<div id="shadow_modal" class="hidden"></div>
 	<div id="addNode_modal" class="hidden">
-		<input type="text"  name="coords">
-		<textarea name="note"></textarea>
-		<div class="buttons">
-			<button id="cancel">Отмена</button>
-			<button id="save">Сохранить</button>
+		<div class="back">
+			<p class="title">Редактирование</p>
+			<svg width="15" height="15" viewBox="0 0 15 15" fill="none" id="cancel" xmlns="http://www.w3.org/2000/svg">
+				<line x1="0.6" y1="-0.6" x2="18.7846" y2="-0.6" transform="matrix(0.707107 -0.707107 0.620519 0.784192 1.10693 15)" stroke="#253348" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+				<line x1="0.6" y1="-0.6" x2="18.7846" y2="-0.6" transform="matrix(0.707107 0.707107 -0.620519 0.784192 0 1)" stroke="#253348" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+			</svg>
 		</div>
+		<div class="input">
+			<p>Координаты</p>
+			<input type="text"  name="coords">
+		</div>
+		<div class="input">
+			<p>Комментарий</p>
+			<textarea name="note"></textarea>
+		</div>
+		<button id="save">Сохранить</button>
 	</div>
 <script type="text/javascript">
 	var myMap, activeMarker;
@@ -160,9 +105,9 @@
 		if (localStorage.getItem("notes") === null) return false;
 		var notes = JSON.parse(localStorage.getItem("notes"));
 		var notesNode = document.querySelector("#notes");
-		while (notesNode.firstChild) {
-			notesNode.removeChild(notesNode.firstChild)
-		}
+		// while (notesNode.firstChild) {
+		// 	notesNode.removeChild(notesNode.firstChild)
+		// }
 
 		for (n of notes) {
 			// add markers
@@ -175,9 +120,24 @@
 			myMap.geoObjects.add(noteMarker);
 
 			// add notes
-			let div = document.createElement("div");
+			let div = document.createElement("div"),
+				title = document.createElement('p'),
+				coords_container = document.createElement('div'),
+				lat = document.createElement('p'),
+				long = document.createElement('p');
+
+			div.appendChild(title);
+			div.appendChild(coords_container);
+			coords_container.appendChild(lat);
+			coords_container.appendChild(long);
+
+			title.className = "title";
+			coords_container.className = "coords"
 			div.className = "note";
-			div.innerText = n.note;
+			title.innerText = n.note;
+
+			lat.innerText = 'Широта: ' + coords[0];
+			long.innerText = 'Долгота: ' + coords[1];
 
 			notesNode.appendChild(div);
 		}
