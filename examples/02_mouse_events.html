@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>События мыши</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <script 
+        src="https://api-maps.yandex.ru/2.1/?lang=ru_RU&amp;apikey=<ваш API-ключ>" type="text/javascript"></script>
+    </script>
+    <script type="text/javascript">
+// Создание событий для JS API схоже с поведением нативного метода
+// addEventListener
+
+// Для добавления события, необходимо указать тип обрабатываемого события
+// и собственно обработчик этого события
+
+// События можно добавить на любой объект на карте, надо только знать его идентификатор
+
+// Итак, определившись с событием, обработчиком и объектом, необходимо обратиться к 
+// коллекции *events* объекта и указать необходимые параметры:
+// объект.events.add("<тип события>", "<обработчик>")
+
+// например:
+// myMap.events.add("click", ev => console.log(ev))
+
+// или:
+// myMap.events.add("click", function(event) {console.log(ev)})
+
+// или:
+// myMap.events.add("click", ev => {console.log(ev)})
+
+// о событиях можно почитать, например тут:
+// https://learn.javascript.ru/mouse-events-basics#tipy-sobytiy-myshi
+        var myMap;
+        ymaps.ready(init);
+
+        function init () {
+            myMap = new ymaps.Map('map', {
+                center: [57.910144, 59.981320],
+                zoom: 12
+            }, {
+                searchControlProvider: 'yandex#search'
+            });
+            myMap.events
+                .add("click", ev => addToLog(ev, "Кликнул левой кнопкой"))
+            myMap.events
+                .add("contextmenu", function(ev) {
+                    addToLog(ev, "Кликнул правой кнопкой")
+                })
+            myMap.events
+                .add("dblclick", ev => {addToLog(ev, "Кликнул правой кнопкой")})
+        }
+
+        function addToLog(event, message) {
+            var db = document.querySelector("#debug");
+            var msg = "";
+
+            msg = message;
+
+            msg += "\n\n";
+            msg += "координаты на карте:";
+            msg += "\n";
+            msg += event.get("coords").join("\n");
+
+            msg += "\n\n";
+            msg += "координаты на странице:";
+            msg += "\n";
+            msg += event.get("pagePixels").join("\n");
+            msg += "\n\n";
+
+            msg += "Тип события:";
+            msg += "\n";
+            msg += event.get("type");
+
+            db.innerText = msg;
+        }
+    </script>
+	<style>
+        html, body, #map {
+            width: 100%; 
+            height: 100%; 
+            padding: 0; 
+            margin: 0;
+        }
+        #debug {
+            position: fixed;
+            width: 300px;
+            height: 400px;
+            background-color: white;
+            top: 20%;
+            right: 30px;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            line-height: 20px;
+            padding-left: 35px;
+            box-sizing: border-box;
+        }
+        #debug br {
+            margin: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <div id="debug"></div>
+</body>
+</html>

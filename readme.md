@@ -28,6 +28,14 @@
 </script>
 ```
 
-Все примеры взяты с официального сайта:
+### Все примеры взяты с официального сайта:
 
 https://yandex.ru/dev/maps/jsbox/2.1/
+
+### Официальная документация Yandex JS API:
+
+https://yandex.ru/dev/maps/jsapi/doc/2.1/ref/concepts/About.html
+
+### Документация localStorage:
+
+https://developer.mozilla.org/ru/docs/Web/API/Window/localStorage
