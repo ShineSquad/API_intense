@@ -1,9 +1,11 @@
 <meta charset="utf-8">
-<script type="text/javascript" src="../examples/yMap_API.js"></script>
+<script 
+    src="https://api-maps.yandex.ru/2.1/?lang=ru_RU&amp;apikey=<ваш API-ключ>"
+    type="text/javascript">
+</script>
 <link rel="stylesheet" type="text/css" href="css/style.css">
 	<div id="app">
 		<div id="notes">
-			<div id="title">Заметки</div>
 		</div>
 		<div id="map"></div>
 	</div>
@@ -20,7 +22,7 @@
 			<p>Координаты</p>
 			<input type="text"  name="coords">
 		</div>
-		<div class="input">
+		<div class="input textarea">
 			<p>Комментарий</p>
 			<textarea name="note"></textarea>
 		</div>
@@ -94,7 +96,10 @@
 	function toggleModal(coords=null) {
 		if (coords !== null) {
 			modal.coords.value = coords.join(", ")
-			modal.note.value = ""
+			modal.note.value = "";
+			setTimeout(() => { 
+				modal.note.focus();; 
+			}, 1);
 		}
 		modal.shadow.classList.toggle("hidden");
 		modal.window.classList.toggle("hidden");
@@ -105,9 +110,9 @@
 		if (localStorage.getItem("notes") === null) return false;
 		var notes = JSON.parse(localStorage.getItem("notes"));
 		var notesNode = document.querySelector("#notes");
-		// while (notesNode.firstChild) {
-		// 	notesNode.removeChild(notesNode.firstChild)
-		// }
+		while (notesNode.firstChild) {
+			notesNode.removeChild(notesNode.firstChild)
+		}
 
 		for (n of notes) {
 			// add markers
@@ -126,8 +131,6 @@
 				lat = document.createElement('p'),
 				long = document.createElement('p');
 
-			div.appendChild(title);
-			div.appendChild(coords_container);
 			coords_container.appendChild(lat);
 			coords_container.appendChild(long);
 
@@ -139,7 +142,36 @@
 			lat.innerText = 'Широта: ' + coords[0];
 			long.innerText = 'Долгота: ' + coords[1];
 
+			div.appendChild(title);
+			div.appendChild(coords_container);
+			div.addEventListener("click", (ev)=>focusOnMap(ev))
 			notesNode.appendChild(div);
 		}
+	}
+
+	function focusOnMap(event) {
+		var coordsNode = event.currentTarget.querySelector(".coords");
+		var coords = [];
+		
+		for (node of coordsNode.querySelectorAll("p")) {
+			let innerText = node.innerText;
+			coords.push(+innerText.replace(/.*?\: /ig, ""));
+		}
+
+		setAsShowed(event.currentTarget);
+		myMap.panTo(coords);
+	}
+
+	function setAsShowed(node) {
+		var notesNode = document.querySelector("#notes");
+		if (notesNode.querySelector(".onShow")) {
+			notesNode
+				.querySelector(".onShow")
+				.classList
+				.remove("onShow");
+		}
+		
+		node.classList.add("onShow");
+		console.log(node)
 	}
 </script>
